@@ -1,0 +1,60 @@
+﻿<Bar Breakpoint="Breakpoint.Desktop" NavigationBreakpoint="Breakpoint.Tablet" ThemeContrast="ThemeContrast.Light"
+     Mode="BarMode.VerticalInline" CollapseMode="BarCollapseMode.Small">
+    <BarToggler />
+    <BarBrand>
+        <BarItem>
+            <BarLink To="">
+                <BarIcon IconName="customIcon" />
+                PON
+            </BarLink>
+        </BarItem>
+    </BarBrand>
+    <BarMenu>
+        <BarStart>
+            <BarItem>
+                <BarLink To="/admin">
+                    <BarIcon IconName="IconName.Home" />
+                    Home
+                </BarLink>
+            </BarItem>
+            
+            <BarItem>
+                <BarLink To="/admin/kota">
+                    <BarIcon IconName="IconName.City" />
+                    Kota
+                </BarLink>
+            </BarItem>
+            <BarItem>
+                <BarLink To="/admin/cabor">
+                    <BarIcon IconName="IconName.Running" />
+                    Cabang Olah Raga
+                </BarLink>
+            </BarItem>
+            <BarItem>
+                <BarLink To="/admin/venue">
+                    <BarIcon IconName="IconName.MapMarkerAlt" />
+                    Venue
+                </BarLink>
+            </BarItem>
+              <BarItem>
+                <BarLink To="/admin/jadwal">
+                    <BarIcon IconName="IconName.CalendarDay" />
+                    Jadwal
+                </BarLink>
+            </BarItem>
+        </BarStart>
+        <BarEnd>
+            <BarItem>
+                <BarLink To="/Identity/Account/Logout">
+                    <BarIcon IconName="IconName.Clock" />
+                    Logout
+                </BarLink>
+            </BarItem>
+        </BarEnd>
+    </BarMenu>
+</Bar>
+@code {
+    private bool pagesBarVisible = true;
+
+    RenderFragment customIcon =@<img src="/brand-logo.png" style="width:32px; height: 32px" />;
+}

@@ -1,0 +1,139 @@
+﻿@layout Layouts.AdminLayout
+@page "/admin/kota"
+
+@inject IVersionProvider VersionProvider
+@inject ApplicationDbContext dbcontext
+
+<div style="display: flex; justify-content:space-between">
+    <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Data Kota</Heading>
+<Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
+</div>
+<DataGrid TItem="Kota" Data="@Kotas" ReadData="@OnReadData" TotalItems="@totalKotas" PageSize="10"
+    ShowPager Responsive>
+    <DataGridColumn >
+        <DisplayTemplate>
+            @context.Id.ToString().
+        </DisplayTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(Kota.Nama)" Caption="Nama" Editable />
+    <DataGridColumn Field="@nameof(Kota.Keterangan)" Caption="Keterangan" Editable />
+    <DataGridColumn Width="150px" Caption="Aksi">
+        <DisplayTemplate>
+            <Icon class="btn btn-outline-warning" Name="IconName.Edit" Clicked="@(()=> EditModal(context))" />
+            <Icon class="btn btn-outline-danger" Name="IconName.Delete" Clicked="@(()=> Delete(context))" />
+        </DisplayTemplate>
+    </DataGridColumn>
+</DataGrid>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Tambah/Edit Kota</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <TextEdit @bind-Text="@model.Nama" Placeholder="Nama" />
+            </Field>
+            <Field>
+                <FieldLabel>Keterangan</FieldLabel>
+                <MemoEdit @bind-Text="@model.Keterangan" Placeholder="Keterangan" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Batal</Button>
+            <Button Color="Color.Primary" Clicked="@Save">Simpan</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+
+@code {
+    [Inject] IMessageService MessageService { get; set; }
+    private Modal modalRef;
+
+    Kota model = new Kota();
+    private List<Kota> Kotas;
+    protected override async Task OnInitializedAsync()
+    {
+        Kotas = await dbcontext.DataKota.ToListAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private int totalKotas;
+
+    private async Task OnReadData(DataGridReadDataEventArgs<Kota> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            List<Kota> response = null;
+
+            // this can be call to anything, in this case we're calling a fictional api
+            //var response = await Http.GetJsonAsync<Kota[]>( $"some-api/Kotas?page={e.Page}&pageSize={e.PageSize}" );
+            if (e.ReadDataMode is DataGridReadDataMode.Virtualize)
+                response = await dbcontext.DataKota.Skip(e.VirtualizeOffset).Take(e.VirtualizeCount).ToListAsync();
+            else if (e.ReadDataMode is DataGridReadDataMode.Paging)
+                response = await dbcontext.DataKota.Skip((e.Page - 1) * e.PageSize).Take(e.PageSize).ToListAsync();
+            else
+                throw new Exception("Unhandled ReadDataMode");
+
+            if (!e.CancellationToken.IsCancellationRequested)
+            {
+                totalKotas = await dbcontext.DataKota.CountAsync();
+                Kotas = new List<Kota>(response); // an actual data for the current page
+            }
+        }
+    }
+
+
+
+    private Task NewModal()
+    {
+        model = new Kota();
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+    private Task EditModal(Kota data)
+    {
+        model = data;
+        return modalRef.Show();
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (model.Id <= 0)
+            {
+                await dbcontext.DataKota.AddAsync(model);
+                await dbcontext.SaveChangesAsync();
+                Kotas.Add(model);
+            }
+            else
+            {
+                await dbcontext.SaveChangesAsync();
+            }
+            await modalRef.Hide();
+        }
+        catch (System.Exception ex)
+        {
+            await MessageService.Error(ex.Message);
+        }
+    }
+
+
+    private async Task Delete(Kota model)
+    {
+        if (await MessageService.Confirm("Yakin Hapus Data ?", "Delete"))
+        {
+            dbcontext.DataKota.Remove(model);
+            await dbcontext.SaveChangesAsync();
+            Kotas.Remove(model);
+        }
+    }
+}

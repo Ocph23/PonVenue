@@ -1,0 +1,139 @@
+﻿@layout Layouts.AdminLayout
+@page "/admin/cabor"
+
+@inject IVersionProvider VersionProvider
+@inject ApplicationDbContext dbcontext
+
+<div style="display: flex; justify-content:space-between">
+    <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Data Cabang Olah Raga</Heading>
+<Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
+</div>
+<DataGrid TItem="Cabor" Data="@Cabors" ReadData="@OnReadData" TotalItems="@totalCabors" PageSize="10"
+    ShowPager Responsive>
+    <DataGridColumn >
+        <DisplayTemplate>
+            @context.Id.ToString().
+        </DisplayTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(Cabor.Nama)" Caption="Nama" Editable />
+    <DataGridColumn Field="@nameof(Cabor.Keterangan)" Caption="Keterangan" Editable />
+    <DataGridColumn Width="150px" Caption="Aksi">
+        <DisplayTemplate>
+            <Icon class="btn btn-outline-warning" Name="IconName.Edit" Clicked="@(()=> EditModal(context))" />
+            <Icon class="btn btn-outline-danger" Name="IconName.Delete" Clicked="@(()=> Delete(context))" />
+        </DisplayTemplate>
+    </DataGridColumn>
+</DataGrid>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Tambah/Edit Cabor</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <TextEdit @bind-Text="@model.Nama" Placeholder="Nama" />
+            </Field>
+            <Field>
+                <FieldLabel>Keterangan</FieldLabel>
+                <MemoEdit @bind-Text="@model.Keterangan" Placeholder="Keterangan" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Batal</Button>
+            <Button Color="Color.Primary" Clicked="@Save">Simpan</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+
+@code {
+    [Inject] IMessageService MessageService { get; set; }
+    private Modal modalRef;
+
+    Cabor model = new Cabor();
+    private List<Cabor> Cabors;
+    protected override async Task OnInitializedAsync()
+    {
+        Cabors = await dbcontext.DataCabor.ToListAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private int totalCabors;
+
+    private async Task OnReadData(DataGridReadDataEventArgs<Cabor> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            List<Cabor> response = null;
+
+            // this can be call to anything, in this case we're calling a fictional api
+            //var response = await Http.GetJsonAsync<Cabor[]>( $"some-api/Cabors?page={e.Page}&pageSize={e.PageSize}" );
+            if (e.ReadDataMode is DataGridReadDataMode.Virtualize)
+                response = await dbcontext.DataCabor.Skip(e.VirtualizeOffset).Take(e.VirtualizeCount).ToListAsync();
+            else if (e.ReadDataMode is DataGridReadDataMode.Paging)
+                response = await dbcontext.DataCabor.Skip((e.Page - 1) * e.PageSize).Take(e.PageSize).ToListAsync();
+            else
+                throw new Exception("Unhandled ReadDataMode");
+
+            if (!e.CancellationToken.IsCancellationRequested)
+            {
+                totalCabors = await dbcontext.DataCabor.CountAsync();
+                Cabors = new List<Cabor>(response); // an actual data for the current page
+            }
+        }
+    }
+
+
+
+    private Task NewModal()
+    {
+        model = new Cabor();
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+    private Task EditModal(Cabor data)
+    {
+        model = data;
+        return modalRef.Show();
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (model.Id <= 0)
+            {
+                await dbcontext.DataCabor.AddAsync(model);
+                await dbcontext.SaveChangesAsync();
+                Cabors.Add(model);
+            }
+            else
+            {
+                await dbcontext.SaveChangesAsync();
+            }
+            await modalRef.Hide();
+        }
+        catch (System.Exception ex)
+        {
+            await MessageService.Error(ex.Message);
+        }
+    }
+
+
+    private async Task Delete(Cabor model)
+    {
+        if (await MessageService.Confirm("Yakin Hapus Data ?", "Delete"))
+        {
+            dbcontext.DataCabor.Remove(model);
+            await dbcontext.SaveChangesAsync();
+            Cabors.Remove(model);
+        }
+    }
+}

@@ -1,0 +1,228 @@
+﻿@layout Layouts.AdminLayout
+@page "/admin/venue"
+
+@inject IVersionProvider VersionProvider
+@inject ApplicationDbContext dbcontext
+@inject IJSRuntime JS;
+
+
+<div style="display: flex; justify-content:space-between">
+    <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Data Venue</Heading>
+    <Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
+</div>
+<DataGrid TItem="Venue" Data="@Venues" ReadData="@OnReadData" TotalItems="@totalVenues" PageSize="10" ShowPager
+    Responsive>
+    <DataGridColumn>
+        <DisplayTemplate>
+            @context.Id.ToString().
+        </DisplayTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(Venue.Nama)" Caption="Nama" Editable />
+    <DataGridColumn Field="@nameof(Venue.Kapasitas)" Caption="Kapasitas" Editable />
+    <DataGridColumn Field="@nameof(Venue.Alamat)" Caption="Alamat" Editable />
+    <DataGridColumn Field="@nameof(Venue.Nama)" Caption="Lokasi">
+        <DisplayTemplate>
+            @context.LatLong
+        </DisplayTemplate>
+    </DataGridColumn>
+    <DataGridColumn Width="150px" Caption="Aksi">
+        <DisplayTemplate>
+            <Icon class="btn btn-outline-warning" Name="IconName.Edit" Clicked="@(()=> EditModal(context))" />
+            <Icon class="btn btn-outline-danger" Name="IconName.Delete" Clicked="@(()=> Delete(context))" />
+        </DisplayTemplate>
+    </DataGridColumn>
+</DataGrid>
+
+<Modal @ref="modalRef">
+    <ModalContent Size="ModalSize.Fullscreen" Centered>
+        <ModalHeader>
+            <ModalTitle>Tambah/Edit Venue</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <div class="row col-md-12">
+                <div class="col-3">
+                    <Field>
+                        <FieldLabel>Nama</FieldLabel>
+                        <TextEdit @bind-Text="@model.Nama" Placeholder="Nama" />
+                    </Field>
+                    <Field>
+                        <FieldLabel>Kapasitas</FieldLabel>
+                        <NumericEdit @bind-Value="@model.Kapasitas" Placeholder="Kapasitas" />
+                    </Field>
+                    <Field>
+                        <FieldLabel>Lokasi</FieldLabel>
+                        <TextEdit Disabled Text="@model.LatLong" Placeholder="Lokasi" />
+                        </Field>
+                        <Field>
+                        <FieldLabel>Keterangan</FieldLabel>
+                        <MemoEdit @bind-Text="@model.Alamat" Placeholder="Alamat" />
+                        </Field>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="card" style="height:78vh">
+                            <GoogleMap @ref="@map1" Id="map1" Options="@mapOptions" Height="100%"
+                            OnAfterInit="@(async () => await OnAfterInitAsync())"></GoogleMap>
+                        </div>
+                    </div>
+                </div>
+                </ModalBody>
+                <ModalFooter>
+                <Button Color="Color.Secondary" Clicked="@HideModal">Batal</Button>
+                <Button Color="Color.Primary" Clicked="@Save">Simpan</Button>
+                </ModalFooter>
+                </ModalContent>
+                </Modal>
+
+
+                @code {
+    [Inject] IMessageService MessageService { get; set; }
+    private Modal modalRef;
+    private GoogleMap map1;
+    Marker? marker;
+    private MapOptions mapOptions;
+    Venue model = new Venue();
+    private List<Venue> Venues;
+    private DirectionsRenderer dirRend;
+
+
+    private int totalVenues;
+
+    private async Task OnReadData(DataGridReadDataEventArgs<Venue> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            List<Venue> response = null;
+
+            // this can be call to anything, in this case we're calling a fictional api
+            //var response = await Http.GetJsonAsync<Venue[]>( $"some-api/Venues?page={e.Page}&pageSize={e.PageSize}" );
+            if (e.ReadDataMode is DataGridReadDataMode.Virtualize)
+                response = await dbcontext.DataVenue.Skip(e.VirtualizeOffset).Take(e.VirtualizeCount).ToListAsync();
+            else if (e.ReadDataMode is DataGridReadDataMode.Paging)
+                response = await dbcontext.DataVenue.Skip((e.Page - 1) * e.PageSize).Take(e.PageSize).ToListAsync();
+            else
+                throw new Exception("Unhandled ReadDataMode");
+
+            if (!e.CancellationToken.IsCancellationRequested)
+            {
+                totalVenues = await dbcontext.DataVenue.CountAsync();
+                Venues = new List<Venue>(response); // an actual data for the current page
+            }
+        }
+    }
+
+    private async Task NewModal()
+    {
+        if(marker!=null){
+           await marker.SetMap(null);
+           marker = null;
+        }
+        model = new Venue();
+        modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+    private async Task EditModal(Venue data)
+    {
+        model=data;
+        if (!string.IsNullOrEmpty(model.LatLong) && marker == null)
+        {
+            marker = await CreateMarker(model.Nama, Convert.ToDouble(model.Latitdue), Convert.ToDouble(model.Longitude));
+        }
+
+        modalRef.Show();
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (model.Id <= 0)
+            {
+                await dbcontext.DataVenue.AddAsync(model);
+                await dbcontext.SaveChangesAsync();
+                Venues.Add(model);
+            }
+            else
+            {
+                await dbcontext.SaveChangesAsync();
+            }
+            await modalRef.Hide();
+        }
+        catch (System.Exception ex)
+        {
+            await MessageService.Error(ex.Message);
+        }
+    }
+
+
+    private async Task Delete(Venue model)
+    {
+        if (await MessageService.Confirm("Yakin Hapus Data ?", "Delete"))
+        {
+            dbcontext.DataVenue.Remove(model);
+            await dbcontext.SaveChangesAsync();
+            Venues.Remove(model);
+        }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        mapOptions = new MapOptions()
+            {
+
+                Zoom = 15,
+                Center = new LatLngLiteral()
+                {
+                    Lat = -2.537040886990973,
+                    Lng = 140.7148611690794
+                },
+                MapTypeId = MapTypeId.Satellite
+            };
+        Venues = await dbcontext.DataVenue.ToListAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnAfterInitAsync()
+    {
+        dirRend = await DirectionsRenderer.CreateAsync(map1.JsRuntime, new DirectionsRendererOptions()
+            {
+                Map = map1.InteropObject
+            });
+        await map1.InteropObject.AddListener<MouseEvent>("dblclick", onClickMap);
+
+        StateHasChanged();
+    }
+
+    Action<EventCallback> onClick { get; set; }
+
+    async void onClickMap(MouseEvent data)
+    {
+
+        model.Latitdue = data.LatLng.Lat.ToString();
+        model.Longitude = data.LatLng.Lng.ToString();
+
+        if (marker != null)
+        {
+            marker.SetMap(null);
+        }
+        marker = await CreateMarker(model.Nama, data.LatLng.Lat, data.LatLng.Lng);
+        await map1.InteropObject.PanTo(data.LatLng);
+        StateHasChanged();
+    }
+    private async Task<Marker> CreateMarker(string name, double lat, double lng)
+    {
+        var marker = await Marker.CreateAsync(map1.JsRuntime, new MarkerOptions()
+            {
+                Position = new LatLngLiteral(lat, lng),
+                Map = map1.InteropObject,
+                Label = name
+            });
+
+        return marker;
+    }
+}
