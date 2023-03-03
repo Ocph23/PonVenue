@@ -10,6 +10,7 @@ on:
     branches: [ "web" ]
 
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
@@ -80,8 +81,8 @@ jobs:
           script: cp /var/www/ponvenue/kestrel-ponvenue.service /etc/systemd/system 
           
     - name: Enable Service
-     uses: appleboy/ssh-action@web
-     with:
+      uses: appleboy/ssh-action@web
+      with:
          host: ${{ secrets.HOST }}
          USERNAME: ${{ secrets.USERNAME }}
          PORT: 22
