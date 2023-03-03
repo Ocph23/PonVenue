@@ -1,0 +1,98 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore Dependencies
+      run: dotnet restore "JadwalIbadah/Server/JadwalIbadah.Server.csproj"
+
+    - name: Build app
+      run: dotnet build "JadwalIbadah/Server/JadwalIbadah.Server.csproj" -c Release --no-restore
+
+    - name: Publish App
+      run: dotnet publish "JadwalIbadah/Server/JadwalIbadah.Server.csproj" -c Release -o ./jadwalibadah
+
+
+
+    - name: Copy To VPS
+      uses: appleboy/scp-action@master
+      env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+      with:
+          source: "./jadwalibadah"
+          target: "/var/www"
+          
+    - name: cmod
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+          script: chmod -R 777 /var/www/jadwalibadah    
+          
+    - name: Copy  Site File
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+          script: cp /var/www/jadwalibadah/server/jadwalibadah.conf /etc/apache2/sites-available 
+      
+    - name: Enable Site
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+          script: | 
+            cd /etc/apache2/sites-available & a2ensite jadwalibadah.conf    
+          
+    - name: Copy Service
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+          script: cp /var/www/jadwalibadah/server/kestrel-jadwalibadah.service /etc/systemd/system 
+          
+    #- name: Enable Service
+    #  uses: appleboy/ssh-action@master
+    #  with:
+    #      host: ${{ secrets.HOST }}
+    #      USERNAME: ${{ secrets.USERNAME }}
+    #      PORT: ${{ secrets.PORT }}
+    #      KEY: ${{ secrets.SSHKEY }}
+    #      script: sudo systemctl enable /var/www/jadwalibadah/server/kestrel-jadwalibadah.service    
+
+    - name: Run Kestrel Service
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: ${{ secrets.PORT }}
+          KEY: ${{ secrets.SSHKEY }}
+          script: systemctl restart kestrel-jadwalibadah.service
