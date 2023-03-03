@@ -6,8 +6,6 @@ name: .NET
 on:
   push:
     branches: [ "web" ]
-  pull_request:
-    branches: [ "web" ]
 
 jobs:
   build:
