@@ -5,14 +5,11 @@ name: .NET
 
 on:
   push:
-    branches: [ "web" ]
-  pull_request:
-    branches: [ "web" ]
+    branches: [ "master" ]
 
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -83,11 +80,11 @@ jobs:
     - name: Enable Service
       uses: appleboy/ssh-action@web
       with:
-         host: ${{ secrets.HOST }}
-         USERNAME: ${{ secrets.USERNAME }}
-         PORT: 22
-         KEY: ${{ secrets.SSHKEY }}
-         script: sudo systemctl enable /var/www/ponvenue/kestrel-ponvenue.service    
+           host: ${{ secrets.HOST }}
+           USERNAME: ${{ secrets.USERNAME }}
+           PORT: 22
+           KEY: ${{ secrets.SSHKEY }}
+           script: sudo systemctl enable /var/www/ponvenue/kestrel-ponvenue.service    
 
     - name: Run Kestrel Service
       uses: appleboy/ssh-action@web
