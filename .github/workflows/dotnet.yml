@@ -77,13 +77,13 @@ jobs:
           script: cp /var/www/ponvenue/kestrel-ponvenue.service /etc/systemd/system 
           
     - name: Enable Service
-     uses: appleboy/ssh-action@web
-     with:
-         host: ${{ secrets.HOST }}
-         USERNAME: ${{ secrets.USERNAME }}
-         PORT: 22
-         KEY: ${{ secrets.SSHKEY }}
-         script: sudo systemctl enable /var/www/ponvenue/kestrel-ponvenue.service    
+      uses: appleboy/ssh-action@web
+      with:
+           host: ${{ secrets.HOST }}
+           USERNAME: ${{ secrets.USERNAME }}
+           PORT: 22
+           KEY: ${{ secrets.SSHKEY }}
+           script: sudo systemctl enable /var/www/ponvenue/kestrel-ponvenue.service    
 
     - name: Run Kestrel Service
       uses: appleboy/ssh-action@web
