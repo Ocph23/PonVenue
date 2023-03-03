@@ -27,8 +27,6 @@ jobs:
     - name: Publish App
       run: dotnet publish "PonVenue/PonVenue.csproj" -c Release -o ./ponvenue
 
-
-
     - name: Copy To VPS
       uses: appleboy/scp-action@web
       env:
