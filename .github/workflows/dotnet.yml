@@ -19,7 +19,7 @@ jobs:
       with:
         dotnet-version: 7.0.x
 
-  - name: test
+    - name: test
       uses: appleboy/ssh-action@master
       with:
           host: ${{ secrets.HOST }}
