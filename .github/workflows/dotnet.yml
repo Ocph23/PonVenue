@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "web" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "web" ]
 
 jobs:
   build:
@@ -21,78 +21,78 @@ jobs:
       with:
         dotnet-version: 7.0.x
     - name: Restore Dependencies
-      run: dotnet restore "JadwalIbadah/Server/JadwalIbadah.Server.csproj"
+      run: dotnet restore "PonVenue/PonVenue.csproj"
 
     - name: Build app
-      run: dotnet build "JadwalIbadah/Server/JadwalIbadah.Server.csproj" -c Release --no-restore
+      run: dotnet build "PonVenue/PonVenue.csproj" -c Release --no-restore
 
     - name: Publish App
-      run: dotnet publish "JadwalIbadah/Server/JadwalIbadah.Server.csproj" -c Release -o ./jadwalibadah
+      run: dotnet publish "PonVenue/PonVenue.csproj" -c Release -o ./ponvenue
 
 
 
     - name: Copy To VPS
-      uses: appleboy/scp-action@master
+      uses: appleboy/scp-action@web
       env:
           HOST: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
       with:
-          source: "./jadwalibadah"
+          source: "./ponvenue"
           target: "/var/www"
           
     - name: cmod
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@web
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
-          script: chmod -R 777 /var/www/jadwalibadah    
+          script: chmod -R 777 /var/www/ponvenue    
           
     - name: Copy  Site File
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@web
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
-          script: cp /var/www/jadwalibadah/server/jadwalibadah.conf /etc/apache2/sites-available 
+          script: cp /var/www/ponvenue/ponvenue.conf /etc/apache2/sites-available 
       
     - name: Enable Site
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@web
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
           script: | 
-            cd /etc/apache2/sites-available & a2ensite jadwalibadah.conf    
+            cd /etc/apache2/sites-available & a2ensite ponvenue.conf    
           
     - name: Copy Service
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@web
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
-          script: cp /var/www/jadwalibadah/server/kestrel-jadwalibadah.service /etc/systemd/system 
+          script: cp /var/www/ponvenue/kestrel-ponvenue.service /etc/systemd/system 
           
-    #- name: Enable Service
-    #  uses: appleboy/ssh-action@master
-    #  with:
-    #      host: ${{ secrets.HOST }}
-    #      USERNAME: ${{ secrets.USERNAME }}
-    #      PORT: ${{ secrets.PORT }}
-    #      KEY: ${{ secrets.SSHKEY }}
-    #      script: sudo systemctl enable /var/www/jadwalibadah/server/kestrel-jadwalibadah.service    
+    - name: Enable Service
+     uses: appleboy/ssh-action@web
+     with:
+         host: ${{ secrets.HOST }}
+         USERNAME: ${{ secrets.USERNAME }}
+         PORT: 22
+         KEY: ${{ secrets.SSHKEY }}
+         script: sudo systemctl enable /var/www/ponvenue/kestrel-ponvenue.service    
 
     - name: Run Kestrel Service
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@web
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
+          PORT: 22
           KEY: ${{ secrets.SSHKEY }}
-          script: systemctl restart kestrel-jadwalibadah.service
+          script: systemctl restart kestrel-ponvenue.service

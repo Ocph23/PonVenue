@@ -1,0 +1,16 @@
+﻿[Unit]
+Description=Aplikasi Jadwal Ibadah
+
+[Service]
+WorkingDirectory=/var/www/ponvenue
+ExecStart=/usr/bin/dotnet /var/www/ponvenue/PonVenue.dll
+Restart=always
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-example
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Development
+
+[Install]
+WantedBy=multi-user.target
