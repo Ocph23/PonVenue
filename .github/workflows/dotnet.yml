@@ -19,18 +19,8 @@ jobs:
       with:
         dotnet-version: 7.0.x
 
-    - name: Restore Dependencies
-      run: dotnet restore "PonVenue/PonVenue.csproj"
-
-    - name: Build app
-      run: dotnet build "PonVenue/PonVenue.csproj" -c Release --no-restore
-
-    - name: Publish App
-      run: dotnet publish "PonVenue/PonVenue.csproj" -c Release -o ./ponvenue
-
-
     - name: whoami
-      uses: appleboy/ssh-action@v0.1.4
+      uses: appleboy/ssh-action@v0.1.8
       with:
           host: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
