@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PonVenue.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -22,21 +23,30 @@ namespace PonVenue.Data
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(_context.DataJadwal.ToList().Where(x=>x.StartDate.Value.Ticks >= DateTime.Now.Ticks));
+            return Ok(_context.DataJadwal.Include(x => x.Venue).ThenInclude(x=>x.Kota)
+                .Include(x => x.Cabor).ToList().Where(x => x.StartDate.Value.Ticks >= DateTime.Now.Ticks));
         }
 
         // GET api/<JadwalController>/5
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            return Ok(_context.DataJadwal.FirstOrDefault(x=>x.Id==id));
+            return Ok(_context.DataJadwal
+                .Include(x => x.Venue).ThenInclude(x => x.Kota)
+                .Include(x => x.Cabor)
+                .FirstOrDefault(x => x.Id == id));
         }
 
-        [HttpGet("bydate/{startdate}/{enddate}")]
-        public IActionResult GetByDate(long startdate, long enddate)
+        [HttpPost("bydate")]
+        public IActionResult PostByDate(Jadwalrequest date)
         {
-           var data = _context.DataJadwal.ToList().Where(x => x.StartDate.Value.Ticks >= startdate && x.EndDate.Value.Ticks <= enddate);
-           return Ok(data);
+            var data = _context.DataJadwal
+                 .Include(x => x.Venue)
+                 .ThenInclude(x => x.Kota)
+                 .Include(x => x.Cabor)
+                 .Where(x=>x.StartDate.Value >= date.StartDate.Value && x.EndDate <= date.EndDate.Value);
+
+            return Ok(data);
         }
 
     }

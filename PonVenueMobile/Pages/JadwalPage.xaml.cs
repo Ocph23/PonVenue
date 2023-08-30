@@ -52,7 +52,7 @@ public partial class JadwalPageViewModel : BaseViewModel
 
     private void DetailJadwalShow(Jadwal x)
     {
-        Shell.Current.Navigation.PushAsync(new DetailJadwalPage(x));
+        Shell.Current.Navigation.PushModalAsync(new DetailJadwalPage(x));
     }
 
     public ICommand JadwalSelectCommand { get; set; }
@@ -65,6 +65,10 @@ public partial class JadwalPageViewModel : BaseViewModel
 
     [ObservableProperty]
     private DateTime endDate = DateTime.Now.AddHours(1);
+
+
+    [ObservableProperty]
+    private Jadwal selectedJadwal;
 
 
 }

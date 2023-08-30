@@ -9,25 +9,34 @@
     <Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
 </div>
 <DataGrid TItem="Jadwal" Data="@Jadwals" ReadData="@OnReadData" TotalItems="@totalJadwals" PageSize="10" ShowPager
-    Responsive>
-    <DataGridColumn Caption="No">
+          Responsive>
+    <DataGridColumn Caption="Mulai">
         <DisplayTemplate>
-            @context.Id.ToString().
+            @context.StartDate.Value.ToString("dd-MM-yyyy HH:ss")
         </DisplayTemplate>
     </DataGridColumn>
-    <DataGridColumn Caption="Cabor" >
+    <DataGridColumn Caption="Selesai">
+        <DisplayTemplate>
+            @context.EndDate.Value.ToString("dd-MM-yyyy HH:ss")
+        </DisplayTemplate>
+    </DataGridColumn>
+    <DataGridColumn Caption="Cabor">
         <DisplayTemplate>
             @context.Cabor.Nama
         </DisplayTemplate>
     </DataGridColumn>
-    <DataGridColumn  Caption="Venue">
+    <DataGridColumn Caption="Venue">
         <DisplayTemplate>
             @context.Venue.Nama
         </DisplayTemplate>
     </DataGridColumn>
-    <DataGridColumn Field="@nameof(Jadwal.EndDate)" Caption="Mulai"  />
-    <DataGridColumn Field="@nameof(Jadwal.EndDate)" Caption="Selesai"  />
-    <DataGridColumn Field="@nameof(Jadwal.Keterangan)" Caption="Keterangan"  />
+    <DataGridColumn Caption="Kota">
+        <DisplayTemplate>
+            @context.Venue.Kota.Nama
+        </DisplayTemplate>
+    </DataGridColumn>
+   
+    <DataGridColumn Field="@nameof(Jadwal.Keterangan)" Caption="Keterangan" />
     <DataGridColumn Width="150px" Caption="Aksi">
         <DisplayTemplate>
             <Icon class="btn btn-outline-warning" Name="IconName.Edit" Clicked="@(()=> EditModal(context))" />
@@ -59,21 +68,21 @@
                     <SelectItem Value="0">None</SelectItem>
                     @foreach (var venue in venues)
                     {
-                        <SelectItem Value="@venue.Id">@venue.Nama</SelectItem>
+                        <SelectItem Value="@venue.Id">@venue.Nama - @venue.Kota.Nama</SelectItem>
                     }
                 </Select>
             </Field>
             <Field>
                 <FieldLabel>Mulai</FieldLabel>
-                <DateEdit @bind-Date="@model.StartDate" Placeholder="Mulai" />
+                <DateEdit @bind-Date="@model.StartDate" Placeholder="Mulai" InputMode="DateInputMode.DateTime" />
             </Field>
             <Field>
                 <FieldLabel>Selesai</FieldLabel>
-                <DateEdit @bind-Date="@model.EndDate" Placeholder="Selesai" />
+                <DateEdit @bind-Date="@model.EndDate" Placeholder="Selesai" InputMode="DateInputMode.DateTime" />
             </Field>
             <Field>
                 <FieldLabel>Keterangan</FieldLabel>
-                <MemoEdit @bind-Text="@model.Keterangan" Placeholder="Keterangan" />
+                <MemoEdit @bind-Text="@model.Keterangan" Placeholder="Pertandingan/Keterangan" />
             </Field>
         </ModalBody>
         <ModalFooter>
@@ -89,17 +98,18 @@
     private Modal modalRef;
 
     Jadwal model = new Jadwal();
-    
-    private int selectedCabor;
+
     private int selectedVenue;
     private List<Jadwal> Jadwals;
+    private int selectedCabor;
     private IEnumerable<Cabor> cabors;
     private IEnumerable<Venue> venues;
     protected override async Task OnInitializedAsync()
     {
         cabors = dbcontext.DataCabor.ToList();
-        venues = dbcontext.DataVenue.ToList();
-        Jadwals = await dbcontext.DataJadwal.Include(x=>x.Cabor).Include(x=>x.Venue).ToListAsync();
+        venues = dbcontext.DataVenue.Include(x => x.Kota).ToList();
+        Jadwals = dbcontext.DataJadwal.Include(x => x.Cabor).Include(x => x.Venue)
+        .ThenInclude(x=>x.Kota).ToList();
         await base.OnInitializedAsync();
     }
 
@@ -153,11 +163,21 @@
     {
         try
         {
+            model.Cabor = cabors.SingleOrDefault(x => x.Id == selectedCabor);
+            model.Venue = venues.SingleOrDefault(x => x.Id == selectedVenue);
+
+            if (model.Cabor==null)
+                throw new SystemException("Anda Belum memilih Cabang Olah Raga !");
+
+            if (model.Venue == null)
+                throw new SystemException("Anda  Belum memilih Venue Pelaksanaan !");
+
+            if (model.StartDate >= model.EndDate)
+                throw new SystemException("Tanggal/Jam Mulai Tidak Boleh Lebih Besar dan  Tanggal Selesai !");
+
+
             if (model.Id <= 0)
             {
-                model.Cabor = cabors.SingleOrDefault(x=>x.Id==selectedCabor);    
-                model.Venue = venues.SingleOrDefault(x=>x.Id==selectedVenue);    
-
                 dbcontext.Entry(model.Cabor).State = EntityState.Unchanged;
                 dbcontext.Entry(model.Venue).State = EntityState.Unchanged;
                 await dbcontext.DataJadwal.AddAsync(model);

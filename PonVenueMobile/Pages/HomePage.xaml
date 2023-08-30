@@ -9,8 +9,8 @@
         <StackLayout>
             <Image Source="logo1.svg" WidthRequest="200"></Image>
             <Label Margin="0,30" FontSize="20" HorizontalOptions="Center" Text="SELAMAT DATANG "></Label>
-            <Label HorizontalOptions="Center" FontSize="30" Text="APLIKASI JADWAL"></Label>
-            <Label HorizontalOptions="Center" FontSize="20" Text="PELAKSANAAN PON XX"></Label>
+            <Label HorizontalOptions="Center" FontSize="25" Text="APLIKASI INFO VENUE "></Label>
+            <Label HorizontalOptions="Center" FontSize="25" Text="DAN JADWAL PON XX PAPUA"></Label>
         </StackLayout>
     </Grid>
 </ContentPage>

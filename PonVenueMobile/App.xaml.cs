@@ -9,6 +9,7 @@ namespace PonVenueMobile
             InitializeComponent();
 
             DependencyService.Register<JadwalService>();
+            DependencyService.Register<VenueService>();
 
             MainPage = new AppShell();
         }

@@ -1,0 +1,9 @@
+﻿
+
+
+POST https://localhost:7299/api/jadwal/bydate 
+Content-Type:application/json
+
+{"StartDate":"2023-03-01T00:00:00","EndDate":"2023-03-31T00:00:00"}
+
+####

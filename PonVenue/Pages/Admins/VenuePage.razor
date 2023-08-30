@@ -11,7 +11,7 @@
     <Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
 </div>
 <DataGrid TItem="Venue" Data="@Venues" ReadData="@OnReadData" TotalItems="@totalVenues" PageSize="10" ShowPager
-    Responsive>
+          Responsive>
     <DataGridColumn>
         <DisplayTemplate>
             @context.Id.ToString().
@@ -47,6 +47,16 @@
                         <TextEdit @bind-Text="@model.Nama" Placeholder="Nama" />
                     </Field>
                     <Field>
+                        <FieldLabel>Kota</FieldLabel>
+                        <Select TValue="int" @bind-SelectedValue="@kotaSelected">
+                            <SelectItem Value="0">None</SelectItem>
+                            @foreach (var kota in kotas)
+                            {
+                                <SelectItem Value="@kota.Id">@kota.Nama</SelectItem>
+                            }
+                        </Select>
+                    </Field>
+                    <Field>
                         <FieldLabel>Kapasitas</FieldLabel>
                         <NumericEdit @bind-Value="@model.Kapasitas" Placeholder="Kapasitas" />
                     </Field>
@@ -62,7 +72,7 @@
                     <div class="col-md-9">
                         <div class="card" style="height:78vh">
                             <GoogleMap @ref="@map1" Id="map1" Options="@mapOptions" Height="100%"
-                            OnAfterInit="@(async () => await OnAfterInitAsync())"></GoogleMap>
+                                   OnAfterInit="@(async () => await OnAfterInitAsync())"></GoogleMap>
                         </div>
                     </div>
                 </div>
@@ -85,8 +95,29 @@
     private List<Venue> Venues;
     private DirectionsRenderer dirRend;
 
+    private int kotaSelected;
+    private IEnumerable<Kota> kotas;
 
     private int totalVenues;
+
+    protected override async Task OnInitializedAsync()
+    {
+        kotas = dbcontext.DataKota.ToList();
+        mapOptions = new MapOptions()
+            {
+
+                Zoom = 15,
+                Center = new LatLngLiteral()
+                {
+                    Lat = -2.537040886990973,
+                    Lng = 140.7148611690794
+                },
+                MapTypeId = MapTypeId.Satellite
+            };
+        Venues = dbcontext.DataVenue.ToList();
+        await base.OnInitializedAsync();
+    }
+
 
     private async Task OnReadData(DataGridReadDataEventArgs<Venue> e)
     {
@@ -113,9 +144,10 @@
 
     private async Task NewModal()
     {
-        if(marker!=null){
-           await marker.SetMap(null);
-           marker = null;
+        if (marker != null)
+        {
+            await marker.SetMap(null);
+            marker = null;
         }
         model = new Venue();
         modalRef.Show();
@@ -127,7 +159,7 @@
     }
     private async Task EditModal(Venue data)
     {
-        model=data;
+        model = data;
         if (!string.IsNullOrEmpty(model.LatLong) && marker == null)
         {
             marker = await CreateMarker(model.Nama, Convert.ToDouble(model.Latitdue), Convert.ToDouble(model.Longitude));
@@ -140,8 +172,25 @@
     {
         try
         {
+            model.Kota = kotas.SingleOrDefault(x => x.Id == kotaSelected);
+
+            if (string.IsNullOrEmpty(model.Nama))
+                throw new SystemException("Nama Venue Belum Diisi !");
+
+            if (model.Kota == null)
+                throw new SystemException("Anda Belum Memilik Kota !");
+
+            if (string.IsNullOrEmpty(model.LatLong))
+                throw new SystemException("Anda Belum Menentukan Lokasi !");
+
+            if (model.Kapasitas <= 0)
+                throw new SystemException("Kapasitas Tidak Boleh Kosong !");
+
+
+
             if (model.Id <= 0)
             {
+                dbcontext.Entry(model.Kota).State = EntityState.Unchanged;
                 await dbcontext.DataVenue.AddAsync(model);
                 await dbcontext.SaveChangesAsync();
                 Venues.Add(model);
@@ -171,22 +220,7 @@
 
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        mapOptions = new MapOptions()
-            {
 
-                Zoom = 15,
-                Center = new LatLngLiteral()
-                {
-                    Lat = -2.537040886990973,
-                    Lng = 140.7148611690794
-                },
-                MapTypeId = MapTypeId.Satellite
-            };
-        Venues = await dbcontext.DataVenue.ToListAsync();
-        await base.OnInitializedAsync();
-    }
     private async Task OnAfterInitAsync()
     {
         dirRend = await DirectionsRenderer.CreateAsync(map1.JsRuntime, new DirectionsRendererOptions()
@@ -203,8 +237,8 @@
     async void onClickMap(MouseEvent data)
     {
 
-        model.Latitdue = data.LatLng.Lat.ToString();
-        model.Longitude = data.LatLng.Lng.ToString();
+        model.Latitdue = data.LatLng.Lat;
+        model.Longitude = data.LatLng.Lng;
 
         if (marker != null)
         {

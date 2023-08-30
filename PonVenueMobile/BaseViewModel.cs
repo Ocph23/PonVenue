@@ -10,6 +10,7 @@ namespace PonVenueMobile
     public class BaseViewModel : BaseNotify
     {
         public JadwalService JadwalStore => DependencyService.Get<JadwalService>();
+        public VenueService VenueStore => DependencyService.Get<VenueService>();
 
         bool isBusy = false;
         public bool IsBusy

@@ -57,7 +57,10 @@
     private List<Cabor> Cabors;
     protected override async Task OnInitializedAsync()
     {
-        Cabors = await dbcontext.DataCabor.ToListAsync();
+        var cabors = dbcontext.DataCabor.ToList();
+        if (cabors != null)
+            Cabors = cabors;
+        
         await base.OnInitializedAsync();
     }
 
@@ -108,6 +111,9 @@
     {
         try
         {
+
+          
+
             if (model.Id <= 0)
             {
                 await dbcontext.DataCabor.AddAsync(model);

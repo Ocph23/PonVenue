@@ -10,19 +10,23 @@
             <Label Text="Jadwal" FontAttributes="Bold" Margin="0,10" FontSize="20"></Label>
             <Grid ColumnDefinitions="*,*,auto" ColumnSpacing="10">
                 <HorizontalStackLayout BackgroundColor="#C7C7C7">
-                    <DatePicker Format="dd-MM-yyyy  HH:mm"></DatePicker>
-                    <Image Source="calender.svg"></Image>
+                    <DatePicker Format="dd-MM-yyyy" Date="{Binding StartDate}"></DatePicker>
+                    <Image Source="calender.svg" WidthRequest="25"></Image>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Grid.Column="1" BackgroundColor="#C7C7C7">
-                    <DatePicker Format="dd-MM-yyyy  HH:mm"></DatePicker>
-                    <Image Source="calender.svg"></Image>
+                    <DatePicker Format="dd-MM-yyyy" Date="{Binding EndDate}"></DatePicker>
+                    <Image Source="calender.svg" WidthRequest="25"></Image>
                 </HorizontalStackLayout>
-                <ImageButton Grid.Column="2" Source="searchmap.svg"></ImageButton>
+                <ImageButton Grid.Column="2" WidthRequest="30" Command="{Binding RefreshCommand}" Source="searchmap.svg"></ImageButton>
             </Grid>
         </StackLayout>
         <ScrollView Grid.Row="1" Margin="0,20">
-            <RefreshView Command="{Binding RefreshCommand}">
-                <CollectionView ItemsSource="{Binding Sources}" SelectionMode="Single" SelectionChangedCommand="{Binding JadwalSelectCommand}">
+            <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}"  >
+                <CollectionView ItemsSource="{Binding Sources}" SelectionMode="Single" 
+                                SelectionChangedCommand="{Binding JadwalSelectCommand}"
+                                SelectedItem="{Binding SelectedJadwal}"
+                                SelectionChangedCommandParameter="{Binding Path=SelectedItem,
+                    Source={RelativeSource Self}}" >
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Frame Background="#D5CAAA" HasShadow="True" Margin="0,5">
@@ -31,22 +35,22 @@
                                         <StackLayout Spacing="5">
                                             <HorizontalStackLayout>
                                                 <Image WidthRequest="20" Source="calendar_gold.svg"></Image>
-                                                <Label  Margin="5,0,0,0" Text="30-12-2023"></Label>
+                                                <Label  Margin="5,0,0,0" Text="{Binding StartDate,StringFormat='{0:dd-MM-yyyy}'}"></Label>
                                             </HorizontalStackLayout>
                                             <HorizontalStackLayout>
                                                 <Image WidthRequest="20" Source="time_gold.svg"></Image>
-                                                <Label Margin="5,0,0,0" Text="tgl mulai"></Label>
+                                                <Label Margin="5,0,0,0" Text="{Binding StartDate,StringFormat='{0:HH:mm}'}"></Label>
                                             </HorizontalStackLayout>
                                         </StackLayout>
                                         <BoxView Grid.Column="1" WidthRequest="1" BackgroundColor="#976200"></BoxView>
                                         <StackLayout Grid.Column="2" Spacing="5">
                                             <HorizontalStackLayout HorizontalOptions="End">
-                                                <Label Margin="0,0,5,0" Text="31-12-2023"></Label>
+                                                <Label Margin="0,0,5,0" Text="{Binding EndDate,StringFormat='{0:dd-MM-yyyy}'}"></Label>
                                                 <Image WidthRequest="20" Source="calendar_gold.svg"></Image>
                                             </HorizontalStackLayout>
 
                                             <HorizontalStackLayout HorizontalOptions="End">
-                                                <Label Margin="0,0,5,0" Text="tgl mulai"></Label>
+                                                <Label Margin="0,0,5,0" Text="{Binding EndDate,StringFormat='{0:HH:mm}'}"></Label>
                                                 <Image WidthRequest="20" Source="time_gold.svg"></Image>
                                             </HorizontalStackLayout>
                                         </StackLayout>
@@ -55,19 +59,19 @@
                                     <Grid ColumnDefinitions="*,*" Grid.Row="2" Grid.Column="2" RowSpacing="5">
                                         <Grid ColumnDefinitions="auto,*" Grid.Column="0">
                                             <Image WidthRequest="15" Grid.Column="0" Source="venuegold.svg"></Image>
-                                            <Label  Grid.Column="1" LineBreakMode="WordWrap"  Margin="5,0,0,0" Text="GOR sdad ad ada Cendrawasih"></Label>
+                                            <Label  Grid.Column="1" LineBreakMode="WordWrap"  Margin="5,0,0,0" Text="{Binding Venue.Nama}"></Label>
                                         </Grid>
                                         <Grid Grid.Column="1" ColumnDefinitions="*,auto" HorizontalOptions="End" >
-                                            <Label Grid.Column="0" Margin="0,0,5,0" LineBreakMode="WordWrap" Text="Sepak Bola"></Label>
+                                            <Label Grid.Column="0" Margin="0,0,5,0" LineBreakMode="WordWrap" Text="{Binding Cabor.Nama}"></Label>
                                             <Image HorizontalOptions="End" Grid.Column="1" WidthRequest="20" Source="cabor_gold.svg"></Image>
                                         </Grid>
                                     </Grid>
                                     <Frame Grid.Row="3" Padding="3"  BackgroundColor="#FFF1C9" >
-                                        <Editor HeightRequest="60" ></Editor>
+                                        <Editor HeightRequest="60" Text="{Binding Keterangan}" IsReadOnly="True" ></Editor>
                                     </Frame>
                                 </Grid>
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding BindingContext.JadwalSelectCommand, Source={x:Reference page}}"></TapGestureRecognizer>
+                                    <TapGestureRecognizer Command="{Binding BindingContext.JadwalSelectCommand, Source={x:Reference page}}" CommandParameter="{Binding .}"></TapGestureRecognizer>
                                 </Frame.GestureRecognizers>
                             </Frame>
                         </DataTemplate>

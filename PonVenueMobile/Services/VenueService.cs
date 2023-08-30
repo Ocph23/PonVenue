@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace PonVenueMobile.Services
 {
-    public class JadwalService
+    public class VenueService
     {
 
-        readonly string controller = "/api/jadwal";
-        public async Task<List<Jadwal>> GetByDate(DateTime start, DateTime enddate)
+        readonly string controller = "/api/venue";
+        public async Task<List<Venue>> Get()
         {
             try
             {
                 using var client = new RestService();
-                var response = await client.PostAsync($"{controller}/bydate", client.GenerateHttpContent(new Jadwalrequest { StartDate=start, EndDate=enddate}));
+                var response = await client.GetAsync($"{controller}");
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.GetResult<List<Jadwal>>();
+                    var result = await response.GetResult<List<Venue>>();
                     return result;
                 }
                 else

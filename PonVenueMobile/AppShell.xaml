@@ -9,6 +9,9 @@
         <ShellContent Title="Home"
                      Icon="home.svge"
                      ContentTemplate="{DataTemplate local:HomePage}" />
+        <ShellContent Title="List Venue"
+                     Icon="list.svg"
+                     ContentTemplate="{DataTemplate local:ListVenuePage}" />
         <ShellContent Title="Jadwal"
                      Icon="calender.svg"
                      ContentTemplate="{DataTemplate local:JadwalPage}" />

@@ -3,14 +3,15 @@
 
 @inject IVersionProvider VersionProvider
 @inject ApplicationDbContext dbcontext
+@inject IMessageService MessageService
 
 <div style="display: flex; justify-content:space-between">
     <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Data Kota</Heading>
-<Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
+    <Button Color="Color.Primary" Clicked="@NewModal">Tambah</Button>
 </div>
 <DataGrid TItem="Kota" Data="@Kotas" ReadData="@OnReadData" TotalItems="@totalKotas" PageSize="10"
-    ShowPager Responsive>
-    <DataGridColumn >
+          ShowPager Responsive>
+    <DataGridColumn>
         <DisplayTemplate>
             @context.Id.ToString().
         </DisplayTemplate>
@@ -50,14 +51,18 @@
 
 
 @code {
-    [Inject] IMessageService MessageService { get; set; }
+
+   
     private Modal modalRef;
 
     Kota model = new Kota();
-    private List<Kota> Kotas;
+    private List<Kota> Kotas = new List<Kota>();
     protected override async Task OnInitializedAsync()
     {
-        Kotas = await dbcontext.DataKota.ToListAsync();
+        var kotas = dbcontext.DataKota.ToList();
+        if (kotas != null)
+            Kotas = kotas;
+
         await base.OnInitializedAsync();
     }
 

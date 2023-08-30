@@ -2,11 +2,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
-                xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
+             xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
              x:Class="PonVenueMobile.Pages.DetailJadwalPage"
              Shell.NavBarIsVisible="False"
              Title="DetailJadwalPage">
-    <Grid Padding="10" RowDefinitions="auto, auto,auto, *">
+    <Grid Padding="20" RowDefinitions="auto, auto,auto, *">
         <StackLayout>
             <Label Text="Detail Jadwal" FontAttributes="Bold" Margin="0,10" FontSize="20"></Label>
         </StackLayout>
@@ -16,22 +16,22 @@
                     <StackLayout Spacing="5">
                         <HorizontalStackLayout>
                             <Image WidthRequest="20" Source="calendar_gold.svg"></Image>
-                            <Label  Margin="5,0,0,0" Text="30-12-2023"></Label>
+                            <Label  Margin="5,0,0,0" Text="{Binding Model.StartDate, StringFormat='{0:dd-MM-yyyy}'}"></Label>
                         </HorizontalStackLayout>
                         <HorizontalStackLayout>
                             <Image WidthRequest="20" Source="time_gold.svg"></Image>
-                            <Label Margin="5,0,0,0" Text="tgl mulai"></Label>
+                            <Label Margin="5,0,0,0" Text="{Binding Model.StartDate, StringFormat='{0:HH:ss}'}"></Label>
                         </HorizontalStackLayout>
                     </StackLayout>
                     <BoxView Grid.Column="1" WidthRequest="1" BackgroundColor="#976200"></BoxView>
                     <StackLayout Grid.Column="2" Spacing="5">
                         <HorizontalStackLayout HorizontalOptions="End">
-                            <Label Margin="0,0,5,0" Text="31-12-2023"></Label>
+                            <Label  Margin="0,0,5,0" Text="{Binding Model.EndDate, StringFormat='{0:dd-MM-yyyy}'}"></Label>
                             <Image WidthRequest="20" Source="calendar_gold.svg"></Image>
                         </HorizontalStackLayout>
 
                         <HorizontalStackLayout HorizontalOptions="End">
-                            <Label Margin="0,0,5,0" Text="tgl mulai"></Label>
+                            <Label Margin="0,0,5,0" Text="{Binding Model.StartDate, StringFormat='{0:HH:ss}'}"></Label>
                             <Image WidthRequest="20" Source="time_gold.svg"></Image>
                         </HorizontalStackLayout>
                     </StackLayout>
@@ -39,10 +39,10 @@
                 <BoxView Grid.Row="1" HeightRequest="1" Margin="0,10" Color="#976200"></BoxView>
                 <HorizontalStackLayout Grid.Row="2" Grid.Column="2" >
                     <Image Grid.Column="1" WidthRequest="20" Source="cabor_gold.svg"></Image>
-                    <Label Grid.Column="0" Margin="0,0,5,0" LineBreakMode="WordWrap" Text="Sepak Bola"></Label>
+                    <Label Grid.Column="0" Margin="0,0,5,0" LineBreakMode="WordWrap" Text="{Binding Model.Cabor.Nama}"></Label>
                 </HorizontalStackLayout>
                 <Frame Grid.Row="3" Padding="3"  BackgroundColor="#FFF1C9" >
-                    <Editor HeightRequest="60" ></Editor>
+                    <Editor HeightRequest="60" Text="{Binding Model.Keterangan}" IsReadOnly="True" ></Editor>
                 </Frame>
             </Grid>
         </Frame>
@@ -50,23 +50,26 @@
             <StackLayout >
                 <HorizontalStackLayout >
                     <Image Grid.Column="1" WidthRequest="20" Source="venuegold.svg"></Image>
-                    <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="GOR WARINGIN"></Label>
+                    <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="{Binding Model.Venue.Nama}"></Label>
                 </HorizontalStackLayout>
                 <BoxView HeightRequest="1" Margin="0,10" Color="#976200"></BoxView>
                 <HorizontalStackLayout >
                     <Image Grid.Column="1" WidthRequest="20" Source="people.svg"></Image>
-                    <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="GOR WARINGIN"></Label>
+                    <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="{Binding Model.Venue.Kapasitas}"></Label>
                     <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="Orang"></Label>
                 </HorizontalStackLayout>
+                <HorizontalStackLayout Margin="0,10" >
+                    <Image Grid.Column="1" WidthRequest="20" Source="city.svg"></Image>
+                    <Label Grid.Column="0" Margin="5,0,0,0" LineBreakMode="WordWrap" Text="{Binding Model.Venue.Kota.Nama}"></Label>
+                </HorizontalStackLayout>
                 <Frame Padding="3" Margin="0,5"  BackgroundColor="#FFF1C9" >
-                    <Editor HeightRequest="60" ></Editor>
+                    <Editor HeightRequest="60" Text="{Binding Model.Venue.Alamat}" IsReadOnly="True" ></Editor>
                 </Frame>
             </StackLayout>
         </Frame>
         <Frame Grid.Row="3" Background="#D5CAAA" HasShadow="True" Padding="0" Margin="0,5">
             <Grid >
-                <maps:Map x:Name="map" IsShowingUser="True" >
-                   
+                <maps:Map x:Name="map" IsShowingUser="True"  >
                 </maps:Map>
             </Grid>
         </Frame>

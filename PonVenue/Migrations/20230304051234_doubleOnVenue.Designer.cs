@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PonVenue.Data;
 
@@ -10,9 +11,11 @@ using PonVenue.Data;
 namespace PonVenue.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230304051234_doubleOnVenue")]
+    partial class doubleOnVenue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,9 +293,6 @@ namespace PonVenue.Migrations
                     b.Property<int>("Kapasitas")
                         .HasColumnType("int");
 
-                    b.Property<int>("KotaId")
-                        .HasColumnType("int");
-
                     b.Property<double>("Latitdue")
                         .HasColumnType("double");
 
@@ -304,8 +304,6 @@ namespace PonVenue.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("KotaId");
 
                     b.ToTable("DataVenue");
                 });
@@ -378,17 +376,6 @@ namespace PonVenue.Migrations
                     b.Navigation("Cabor");
 
                     b.Navigation("Venue");
-                });
-
-            modelBuilder.Entity("PonVenue.Models.Venue", b =>
-                {
-                    b.HasOne("PonVenue.Models.Kota", "Kota")
-                        .WithMany()
-                        .HasForeignKey("KotaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Kota");
                 });
 #pragma warning restore 612, 618
         }
