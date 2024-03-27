@@ -7,6 +7,7 @@ namespace PonVenueMobile
 {
     public class Helper
     {
+        //ini perubahan
         public static string Url { get; set; } = "https://venue.apspapua.com";
         //public static string Url { get; set; } = "http://192.168.1.8";
         public static JsonSerializerOptions JsonOptions = new JsonSerializerOptions
